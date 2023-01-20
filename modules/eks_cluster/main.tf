@@ -36,6 +36,9 @@ module "vpc" {
     "kubernetes.io/role/internal-elb" = "1"
   }
 
+  # TODO: modify the security group to allow all egress traffic
+  # required for flux bootstrap
+
   enable_nat_gateway     = true
   single_nat_gateway     = true
   one_nat_gateway_per_az = false

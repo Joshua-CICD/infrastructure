@@ -1,0 +1,24 @@
+name: Basic python project testing
+
+on:
+ 
+  push:
+    branches: [ main ]
+
+jobs:
+
+  test:
+    name: Pytest Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+    - name: Install Dependencies
+      run: pip install -r requirements.txt
+    - name: Run Pytest
+      run: pytest
+    
