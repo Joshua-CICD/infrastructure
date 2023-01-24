@@ -1,14 +1,12 @@
 # Image repositories
 module "frontend_repo" {
   source = "../../modules/ecr_repo"
-  repo_name = "frontend"
-  environment = var.environment
+  repo_name = "frontend-dev"
 }
 
 module "backend_repo" {
   source = "../../modules/ecr_repo"
-  repo_name = "backend"
-  environment = var.environment
+  repo_name = "backend-dev"
 }
 
 # eks_cluster, elb, vpc, and subnets

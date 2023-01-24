@@ -21,6 +21,7 @@ resource "github_repository" "repo" {
   has_wiki           = true
   auto_init          = true
   license_template   = "mit"
+  depends_on = [var.ecr_repo]
 }
 
 #Set default branch 'master'
@@ -29,10 +30,10 @@ resource "github_branch_default" "main" {
   branch     = "main"
 }
 
-resource "github_repository_file" "githubActionsFile" {
+resource "github_repository_file" "dockerfile" {
   repository = var.name
-  file  = ".github/workflows/example.yml"
-  content    = file("${path.module}/templatedFiles/.github/workflows/main.yml")
+  file  = "Dockerfile"
+  content    = file("${path.module}/templatedFiles/Dockerfile")
   commit_message = "Add file from local file"
   branch = "main"
   overwrite_on_create = true
@@ -93,6 +94,26 @@ resource "github_repository_file" "requirements" {
   repository = var.name
   file  = "requirements.txt"
   content    = file("${path.module}/templatedFiles/requirements.txt")
+  commit_message = "Add file from local file"
+  branch = "main"
+  overwrite_on_create = true
+  depends_on = [github_repository.repo]
+}
+
+resource "github_repository_file" "deployment" {
+  repository = var.name
+  file  = "Deployment.yaml"
+  content    = templatefile("${path.module}/templatedFiles/Deployment.yaml", {repo_name = var.name, port = var.port, namespace = var.namespace})
+  commit_message = "Add file from local file"
+  branch = "main"
+  overwrite_on_create = true
+  depends_on = [github_repository.repo]
+}
+
+resource "github_repository_file" "githubActionsFile" {
+  repository = var.name
+  file  = ".github/workflows/main.yml"
+  content    = templatefile("${path.module}/templatedFiles/.github/workflows/main.yml", {repo_name = var.name})
   commit_message = "Add file from local file"
   branch = "main"
   overwrite_on_create = true

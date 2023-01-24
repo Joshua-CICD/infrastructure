@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${namespace}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${repo_name}
+  namespace: ${namespace}
+spec:
+  selector:
+    matchLabels:
+      app: ${repo_name}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${repo_name}
+    spec:
+      imagePullSecrets:
+        - name: ecr-image-pull-secret
+      containers:
+      - image: 382942022480.dkr.ecr.us-east-1.amazonaws.com/${repo_name}:**TAG**
+        name: ${repo_name}
+        ports:
+        - name: ${repo_name}port
+          containerPort: ${port}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${repo_name}
+  namespace: ${namespace}
+spec:
+  ports:
+  - port: ${port}
+    protocol: TCP
+    targetPort: ${repo_name}port
+  type: ClusterIP
+  selector:
+    app: ${repo_name}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${repo_name}-postgres-service
+  namespace: ${namespace}
+spec:
+  selector:
+    app: ${repo_name}-postgres
+  ports:
+    - name: ${repo_name}-postgres
+      port: 5432
+  clusterIP: None
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${repo_name}-postgres
+  namespace: ${namespace}
+spec:
+  selector:
+    matchLabels:
+      app: ${repo_name}-postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${repo_name}-postgres
+    spec:
+      containers:
+        - name: ${repo_name}-postgres
+          image: postgres:12.4
+          env:
+            - name: POSTGRES_USER
+              value: admin
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: ${repo_name}-postgres-data
+              mountPath: /var/lib/${repo_name}/postgresql/data
+      volumes:
+        - name: ${repo_name}-postgres-data
+          emptyDir: {}
